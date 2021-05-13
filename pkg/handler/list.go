@@ -7,6 +7,10 @@ import (
 	"github.com/ptsgr/GoToDo"
 )
 
+type getAllListsResponse struct {
+	Data []GoToDo.TodoList `json:"data"`
+}
+
 func (h *Handler) createList(c *gin.Context) {
 	userID, err := getUserID(c)
 	if err != nil {
@@ -29,6 +33,19 @@ func (h *Handler) createList(c *gin.Context) {
 }
 
 func (h *Handler) getAllLists(c *gin.Context) {
+	userID, err := getUserID(c)
+	if err != nil {
+		return
+	}
+
+	lists, err := h.services.TodoList.GetAll(userID)
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	c.JSON(http.StatusOK, getAllListsResponse{
+		Data: lists,
+	})
 
 }
 

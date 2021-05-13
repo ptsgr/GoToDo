@@ -38,3 +38,12 @@ func (r *TodoLIstPostgres) Create(userID int, list GoToDo.TodoList) (int, error)
 
 	return id, tx.Commit()
 }
+
+func (r *TodoLIstPostgres) GetAll(userID int) ([]GoToDo.TodoList, error) {
+	var lists []GoToDo.TodoList
+	query := fmt.Sprintf(
+		"SELECT tl.id, tl.title, tl.description FROM %s tl INNER JOIN %s ul on tl.id = ul.list_id WHERE ul.user_id = $1",
+		todoListsTable, usersListsTable)
+	err := r.db.Select(&lists, query, userID)
+	return lists, err
+}
