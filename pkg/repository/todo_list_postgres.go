@@ -7,15 +7,15 @@ import (
 	"github.com/ptsgr/GoToDo"
 )
 
-type TodoLIstPostgres struct {
+type TodoListPostgres struct {
 	db *sqlx.DB
 }
 
-func NewTodoLIstPostgres(db *sqlx.DB) *TodoLIstPostgres {
-	return &TodoLIstPostgres{db: db}
+func NewTodoListPostgres(db *sqlx.DB) *TodoListPostgres {
+	return &TodoListPostgres{db: db}
 }
 
-func (r *TodoLIstPostgres) Create(userID int, list GoToDo.TodoList) (int, error) {
+func (r *TodoListPostgres) Create(userID int, list GoToDo.TodoList) (int, error) {
 	tx, err := r.db.Begin()
 	if err != nil {
 		return 0, err
@@ -39,7 +39,7 @@ func (r *TodoLIstPostgres) Create(userID int, list GoToDo.TodoList) (int, error)
 	return id, tx.Commit()
 }
 
-func (r *TodoLIstPostgres) GetAll(userID int) ([]GoToDo.TodoList, error) {
+func (r *TodoListPostgres) GetAll(userID int) ([]GoToDo.TodoList, error) {
 	var lists []GoToDo.TodoList
 	query := fmt.Sprintf(
 		`SELECT tl.id, tl.title, tl.description FROM %s tl
@@ -49,7 +49,7 @@ func (r *TodoLIstPostgres) GetAll(userID int) ([]GoToDo.TodoList, error) {
 	return lists, err
 }
 
-func (r *TodoLIstPostgres) GetByID(userID, listID int) (GoToDo.TodoList, error) {
+func (r *TodoListPostgres) GetByID(userID, listID int) (GoToDo.TodoList, error) {
 	var list GoToDo.TodoList
 	query := fmt.Sprintf(
 		`SELECT tl.id, tl.title, tl.description FROM %s tl
