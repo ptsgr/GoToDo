@@ -11,8 +11,8 @@ type TodoItemPostgres struct {
 	db *sqlx.DB
 }
 
-func NewTodoItemPostgres(db *sqlx.DB) *TodoLIstPostgres {
-	return &TodoLIstPostgres{db: db}
+func NewTodoItemPostgres(db *sqlx.DB) *TodoItemPostgres {
+	return &TodoItemPostgres{db: db}
 }
 
 func (r *TodoItemPostgres) Create(listID int, item GoToDo.TodoItem) (int, error) {
@@ -29,7 +29,7 @@ func (r *TodoItemPostgres) Create(listID int, item GoToDo.TodoItem) (int, error)
 		return 0, err
 	}
 
-	createListItemsQuery := fmt.Sprintf("INSERT INTO %s (list_id, item_id) VALUES ($1, $2) RETURNING id", todoItemsTable)
+	createListItemsQuery := fmt.Sprintf("INSERT INTO %s (list_id, item_id) VALUES ($1, $2) RETURNING id", listsItemsTable)
 	_, err = tx.Exec(createListItemsQuery, listID, itemID)
 	if err != nil {
 		tx.Rollback()
@@ -37,4 +37,19 @@ func (r *TodoItemPostgres) Create(listID int, item GoToDo.TodoItem) (int, error)
 	}
 
 	return itemID, tx.Commit()
+}
+
+func (r *TodoItemPostgres) GetAll(userID, listID int) ([]GoToDo.TodoItem, error) {
+	var items []GoToDo.TodoItem
+	query := fmt.Sprintf(`SELECT ti.id, ti.title, ti.description, ti.done FROM %s ti INNER JOIN %s li ON li.item_id = ti.id
+		 INNER JOIN %s ul ON ul.list_id = li.list_id 
+		 WHERE li.list_id = $1 AND ul.user_id = $2`,
+		todoItemsTable, listsItemsTable, usersListsTable)
+
+	if err := r.db.Select(&items, query, listID, userID); err != nil {
+		return nil, err
+	}
+
+	return items, nil
+
 }
