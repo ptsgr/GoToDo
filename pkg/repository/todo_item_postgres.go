@@ -2,6 +2,7 @@ package repository
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/ptsgr/GoToDo"
@@ -22,8 +23,8 @@ func (r *TodoItemPostgres) Create(listID int, item GoToDo.TodoItem) (int, error)
 	}
 
 	var itemID int
-	createItemQuery := fmt.Sprintf("INSERT INTO %s (title, description) VALUES ($1, $2) RETURNING id", todoItemsTable)
-	row := tx.QueryRow(createItemQuery, item.Title, item.Description)
+	createItemQuery := fmt.Sprintf("INSERT INTO %s (title, description, done) VALUES ($1, $2, $3) RETURNING id", todoItemsTable)
+	row := tx.QueryRow(createItemQuery, item.Title, item.Description, item.Done)
 	if err := row.Scan(&itemID); err != nil {
 		tx.Rollback()
 		return 0, err
@@ -73,5 +74,41 @@ func (r *TodoItemPostgres) Delete(userID, itemID int) error {
 		todoItemsTable, listsItemsTable, usersListsTable)
 
 	_, err := r.db.Exec(query, userID, itemID)
+	return err
+}
+
+func (r *TodoItemPostgres) Update(userID, itemID int, input GoToDo.UpdateItemInput) error {
+	setValues := make([]string, 0)
+	args := make([]interface{}, 0)
+	argID := 1
+
+	if input.Title != nil {
+		setValues = append(setValues, fmt.Sprintf("title=$%d", argID))
+		args = append(args, *input.Title)
+		argID++
+	}
+
+	if input.Description != nil {
+		setValues = append(setValues, fmt.Sprintf("description=$%d", argID))
+		args = append(args, *input.Description)
+		argID++
+	}
+
+	if input.Done != nil {
+		setValues = append(setValues, fmt.Sprintf("done=$%d", argID))
+		args = append(args, *input.Done)
+		argID++
+	}
+
+	setQuery := strings.Join(setValues, ", ")
+
+	query := fmt.Sprintf(
+		`UPDATE %s ti SET %s FROM %s li, %s ul 
+		WHERE ti.id = li.item_id AND li.list_id=ul.list_id AND ti.id=$%d AND ul.user_id=$%d`,
+		todoItemsTable, setQuery, listsItemsTable, usersListsTable, argID, argID+1)
+
+	args = append(args, itemID, userID)
+
+	_, err := r.db.Exec(query, args...)
 	return err
 }

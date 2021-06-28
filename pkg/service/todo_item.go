@@ -36,3 +36,10 @@ func (s *TodoItemService) GetByID(userID, itemID int) (GoToDo.TodoItem, error) {
 func (s *TodoItemService) Delete(userID, itemID int) error {
 	return s.repo.Delete(userID, itemID)
 }
+
+func (s *TodoItemService) Update(userID, itemID int, input GoToDo.UpdateItemInput) error {
+	if err := input.Validate(); err != nil {
+		return err
+	}
+	return s.repo.Update(userID, itemID, input)
+}
