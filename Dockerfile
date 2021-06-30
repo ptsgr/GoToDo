@@ -1,10 +1,16 @@
-FROM golang:1.15-buster
+FROM golang:1.15-buster AS build
 
 ENV GOPATH=/
 
-COPY ./ ./
+WORKDIR /src/
+COPY ./ /src/
 
 RUN go mod download
-RUN go build -o todo ./cmd/main.go
+RUN CGO_ENABLED=0 go build -o /bin/todo ./cmd/main.go
 
-CMD ["./todo"]
+
+FROM scratch
+COPY --from=build /bin/todo /bin/todo
+
+COPY --from=build /src/configs/config.yaml /configs/config.yaml
+ENTRYPOINT ["/bin/todo"]
