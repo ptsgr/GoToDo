@@ -27,6 +27,10 @@ func main() {
 		logrus.Errorf("error loading env variables: %s", err.Error())
 	}
 
+	if "" == os.Getenv("DB_PASSWORD") {
+		logrus.Fatalf("error cannot initializing database password")
+	}
+
 	db, err := repository.NewPostgresDB(repository.DBConfig{
 		Host:     viper.GetString("db.host"),
 		Port:     viper.GetString("db.port"),
