@@ -11,6 +11,7 @@ import (
 func (h *Handler) createItem(c *gin.Context) {
 	userID, err := getUserID(c)
 	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -40,6 +41,7 @@ func (h *Handler) createItem(c *gin.Context) {
 func (h *Handler) getAllItems(c *gin.Context) {
 	userID, err := getUserID(c)
 	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -62,6 +64,7 @@ func (h *Handler) getAllItems(c *gin.Context) {
 func (h *Handler) getItemById(c *gin.Context) {
 	userID, err := getUserID(c)
 	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -83,6 +86,7 @@ func (h *Handler) getItemById(c *gin.Context) {
 func (h *Handler) updateItem(c *gin.Context) {
 	userID, err := getUserID(c)
 	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -109,6 +113,7 @@ func (h *Handler) updateItem(c *gin.Context) {
 func (h *Handler) deleteItem(c *gin.Context) {
 	userID, err := getUserID(c)
 	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
